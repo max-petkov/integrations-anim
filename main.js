@@ -4,6 +4,7 @@ function IntegrationAnimation() {
     this.tl = gsap.timeline();
     this.svg = document.querySelector(".circles-integration");
     this.icons = document.querySelectorAll(".icons-integration [data-icon]");
+    this.circles = this.svg.querySelectorAll("g:not(.integration-logo)");
     this.circleOne = this.svg.querySelector(".circle-1");
     this.circleTwo = this.svg.querySelector(".circle-2");
     this.circleThree = this.svg.querySelector(".circle-3");
@@ -14,7 +15,8 @@ function IntegrationAnimation() {
 
 IntegrationAnimation.prototype.animate = function() {
     this.tl
-    .add(this.animateCircles({
+    .add(this.showCircles())
+    .add(this.moveIcons({
         circle: this.circleOne,
         icons: this.iconsCircleOne,
         start: function(i) {
@@ -27,8 +29,8 @@ IntegrationAnimation.prototype.animate = function() {
             else if(i === 1) return 1.2
             else return 1.9;
         },
-    }), 0)
-    .add(this.animateCircles({
+    }), ">")
+    .add(this.moveIcons({
         circle: this.circleTwo,
         icons: this.iconsCircleTwo,
         start: function(i) {
@@ -41,8 +43,8 @@ IntegrationAnimation.prototype.animate = function() {
             else if(i === 1) return 0.8
             else return 0.25;
         },
-    }), 0)
-    .add(this.animateCircles({
+    }), "<")
+    .add(this.moveIcons({
         circle: this.circleThree,
         icons: this.iconsCircleThree,
         start: function(i) {
@@ -53,10 +55,13 @@ IntegrationAnimation.prototype.animate = function() {
             if(!i) return 1
             else return 1.5;
         },
-    }), 0)
+    }), "<")
+    .add(this.showIcons(), "<");
+
+    return this.tl;
 }
 
-IntegrationAnimation.prototype.animateCircles = function(config) {
+IntegrationAnimation.prototype.moveIcons = function(config) {
     const tl = gsap.timeline({
         defaults: {
             repeat: -1, 
@@ -74,11 +79,53 @@ IntegrationAnimation.prototype.animateCircles = function(config) {
             end: config.end,
         }
     });
+
+    gsap.set(config.icons, {autoAlpha: 1});
     
     return tl;
 }
 
+IntegrationAnimation.prototype.showIcons = function() {
+    const tl = gsap.timeline();
+    const imgs = [...this.icons].map(container => container.firstElementChild);
 
+    tl.fromTo(imgs, {
+        scale: 0,
+        autoAlpha: 0,
+        rotate: 180,
+    }, {
+        rotate: 0,
+        scale: 1,
+        autoAlpha: 1,
+        stagger: 0.1,
+        ease: Back.easeOut.config(1.1),
+        duration: 0.6
+    })
+    
+    return tl;
+}
+
+IntegrationAnimation.prototype.showCircles = function() {
+    const tl = gsap.timeline();
+    tl.fromTo(
+        this.circles,
+        {
+            autoAlpha: 0,
+            scale: 0.5,
+            transformOrigin: "center",
+        },
+        {
+            autoAlpha: 1,
+            scale: 1,
+            ease: Back.easeInOut.config(1.7),
+            duration: 0.6,
+            stagger: {
+                each: 0.1,
+                from: "end",
+            }
+    });
+    return tl;
+}
 
 const integration = new IntegrationAnimation();
 integration.animate();
